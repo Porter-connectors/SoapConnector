@@ -7,7 +7,7 @@ SoapConnector
 [![Test coverage][Coverage image]][Coverage]
 [![Code style][Style image]][Style]
 
-Provides a SOAP connector for [Porter][Porter] that fetches data from an HTTP server via the PHP wrapper.
+Provides a SOAP connector for [Porter][Porter] that fetches data from a SOAP server via the soap extension.
 
 
   [Releases]: https://github.com/Porter-connectors/SoapConnector/releases
