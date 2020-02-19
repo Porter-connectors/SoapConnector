@@ -1,62 +1,69 @@
 <?php
 namespace ScriptFUSIONTest\Unit\Porter\Net\Soap;
 
-use ScriptFUSION\Porter\Net\Soap\SoapOptions;
+use ScriptFUSION\Porter\Net\Soap\SoapDataSource;
 
 final class SoapOptionsTest extends \PHPUnit_Framework_TestCase
 {
-    public function testOptionDefaults()
-    {
-        $options = new SoapOptions;
+    private $source;
 
-        self::assertSame([], $options->getParameters());
-        self::assertNull($options->getVersion());
-        self::assertNull($options->getCompression());
-        self::assertNull($options->getKeepAlive());
+    protected function setUp()
+    {
+        $this->source = new SoapDataSource('foo');
     }
 
-    public function testParameters()
+    public function testOptionDefaults(): void
     {
-        $options = (new SoapOptions)->setParameters($params = ['foo' => 'bar']);
+        self::assertSame([], $this->source->getParameters());
+    }
+
+    public function testMethod(): void
+    {
+        self::assertSame('foo', $this->source->getMethod());
+    }
+
+    public function testParameters(): void
+    {
+        $options = (new SoapDataSource('foo', $params = ['foo' => 'bar']));
 
         self::assertSame($params, $options->getParameters());
     }
 
-    public function testLocation()
+    public function testLocation(): void
     {
-        self::assertSame($location = 'http://foo.com', (new SoapOptions)->setLocation($location)->getLocation());
+        self::assertSame($location = 'http://foo.com', $this->source->setLocation($location)->getLocation());
     }
 
-    public function testUri()
+    public function testUri(): void
     {
-        self::assertSame($uri = 'http://foo.com', (new SoapOptions)->setUri($uri)->getUri());
+        self::assertSame($uri = 'http://foo.com', $this->source->setUri($uri)->getUri());
     }
 
-    public function testVersion()
+    public function testVersion(): void
     {
-        $options = (new SoapOptions)->setVersion(SOAP_1_2);
+        $options = $this->source->setVersion(SOAP_1_2);
 
         self::assertSame(SOAP_1_2, $options->getVersion());
     }
 
-    public function testCompression()
+    public function testCompression(): void
     {
-        $options = (new SoapOptions)->setCompression(SOAP_COMPRESSION_ACCEPT);
+        $options = $this->source->setCompression(SOAP_COMPRESSION_ACCEPT);
 
         self::assertSame(SOAP_COMPRESSION_ACCEPT, $options->getCompression());
     }
 
-    public function testKeepAlive()
+    public function testKeepAlive(): void
     {
-        $options = (new SoapOptions)->setKeepAlive(true);
+        $options = $this->source->setKeepAlive(true);
 
         self::assertTrue($options->getKeepAlive());
         self::assertFalse($options->setKeepAlive(false)->getKeepAlive());
     }
 
-    public function testProxy()
+    public function testProxy(): void
     {
-        $options = (new SoapOptions)
+        $options = $this->source
             ->setProxyHost($host = 'foo.com')
             ->setProxyPort($port = 8080)
             ->setProxyLogin($login = 'foo')
@@ -68,80 +75,62 @@ final class SoapOptionsTest extends \PHPUnit_Framework_TestCase
         self::assertSame($password, $options->getProxyPassword());
     }
 
-    public function testEncoding()
+    public function testEncoding(): void
     {
-        self::assertSame($encoding = 'iso-8859-1', (new SoapOptions)->setEncoding($encoding)->getEncoding());
+        self::assertSame($encoding = 'iso-8859-1', $this->source->setEncoding($encoding)->getEncoding());
     }
 
-    public function testTrace()
+    public function testTrace(): void
     {
-        $options = (new SoapOptions)->setTrace(true);
+        $options = $this->source->setTrace(true);
 
         self::assertTrue($options->getTrace());
         self::assertFalse($options->setTrace(false)->getTrace());
     }
 
-    public function testExceptions()
+    public function testExceptions(): void
     {
-        $options = (new SoapOptions)->setExceptions(true);
+        $options = $this->source->setExceptions(true);
 
         self::assertTrue($options->getExceptions());
         self::assertFalse($options->setExceptions(false)->getExceptions());
     }
 
-    public function testClassmap()
+    public function testClassmap(): void
     {
         $classmap = ['foo' => 'bar'];
 
-        self::assertSame($classmap, (new SoapOptions)->setClassmap($classmap)->getClassmap());
+        self::assertSame($classmap, $this->source->setClassmap($classmap)->getClassmap());
     }
 
-    public function testConnectionTimeout()
+    public function testConnectionTimeout(): void
     {
-        self::assertSame($timeout = 45, (new SoapOptions)->setConnectionTimeout($timeout)->getConnectionTimeout());
+        self::assertSame($timeout = 45, $this->source->setConnectionTimeout($timeout)->getConnectionTimeout());
     }
 
-    public function testTypemap()
+    public function testTypemap(): void
     {
         $typemap = ['foo' => 'bar'];
-        self::assertSame($typemap, (new SoapOptions)->setTypemap($typemap)->getTypemap());
+        self::assertSame($typemap, $this->source->setTypemap($typemap)->getTypemap());
     }
 
-    public function testCacheWsdl()
+    public function testCacheWsdl(): void
     {
-        self::assertSame($option = WSDL_CACHE_MEMORY, (new SoapOptions)->setCacheWsdl($option)->getCacheWsdl());
+        self::assertSame($option = WSDL_CACHE_MEMORY, $this->source->setCacheWsdl($option)->getCacheWsdl());
     }
 
-    public function testUserAgent()
+    public function testUserAgent(): void
     {
-        self::assertSame($userAgent = 'Foo/Bar', (new SoapOptions)->setUserAgent($userAgent)->getUserAgent());
+        self::assertSame($userAgent = 'Foo/Bar', $this->source->setUserAgent($userAgent)->getUserAgent());
     }
 
-    public function testFeatures()
+    public function testFeatures(): void
     {
-        self::assertSame($features = SOAP_USE_XSI_ARRAY_TYPE, (new SoapOptions)->setFeatures($features)->getFeatures());
+        self::assertSame($features = SOAP_USE_XSI_ARRAY_TYPE, $this->source->setFeatures($features)->getFeatures());
     }
 
-    public function testSslMethod()
+    public function testSslMethod(): void
     {
-        self::assertSame($method = SOAP_SSL_METHOD_SSLv2, (new SoapOptions)->setSslMethod($method)->getSslMethod());
-    }
-
-    public function testExtractSoapClientOptions()
-    {
-        $options = new SoapOptions;
-        self::assertSame([], $options->extractSoapClientOptions());
-
-        $options
-            ->setParameters($params = ['foo', 'bar'])
-            ->setVersion(SOAP_1_1)
-            ->setCompression(SOAP_COMPRESSION_DEFLATE)
-            ->setKeepAlive(false);
-
-        self::assertSame([
-            'soap_version' => SOAP_1_1,
-            'compression' => SOAP_COMPRESSION_DEFLATE,
-            'keep_alive' => false,
-        ], $options->extractSoapClientOptions());
+        self::assertSame($method = SOAP_SSL_METHOD_SSLv2, $this->source->setSslMethod($method)->getSslMethod());
     }
 }

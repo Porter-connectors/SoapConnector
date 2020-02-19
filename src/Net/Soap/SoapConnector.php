@@ -1,50 +1,39 @@
 <?php
 namespace ScriptFUSION\Porter\Net\Soap;
 
-use ScriptFUSION\Porter\Connector\CachingConnector;
-use ScriptFUSION\Porter\Connector\RecoverableConnectorException;
-use ScriptFUSION\Porter\Options\EncapsulatedOptions;
-use ScriptFUSION\Porter\Type\ObjectType;
+use ScriptFUSION\Porter\Connector\Connector;
+use ScriptFUSION\Porter\Connector\DataSource;
 
 /**
  * Fetches data from a SOAP service.
  */
-class SoapConnector extends CachingConnector
+class SoapConnector implements Connector
 {
-    private $client;
-
     private $wsdl;
 
-    private $options;
-
-    public function __construct($wsdl = null, SoapOptions $options = null)
+    public function __construct($wsdl = null)
     {
-        parent::__construct();
-
         $this->wsdl = $wsdl;
-        $this->options = $options;
     }
 
-    public function fetchFreshData($source, EncapsulatedOptions $options = null)
+    public function fetch(DataSource $source)
     {
-        if ($options && !$options instanceof SoapOptions) {
-            throw new \InvalidArgumentException('Options must be an instance of SoapOptions.');
+        if (!$source instanceof SoapDataSource) {
+            throw new \InvalidArgumentException('Options must be an instance of SoapDataSource.');
         }
-
-        $params = array_merge($this->options->getParameters(), $options ? $options->getParameters() : []);
 
         try {
-            $response = $this->getOrCreateClient()->$source($params);
+            $response = $this->createClient($source->extractSoapClientOptions())
+                ->{$source->getMethod()}($source->getParameters());
         } catch (\Exception $exception) {
-            throw new RecoverableConnectorException($exception->getMessage(), $exception->getCode(), $exception);
+            throw new SoapException($exception->getMessage(), $exception->getCode(), $exception);
         }
 
-        return ObjectType::toArray($response);
+        return $response;
     }
 
-    private function getOrCreateClient()
+    private function createClient(array $options): \SoapClient
     {
-        return $this->client ?: $this->client =
-            new \SoapClient($this->wsdl, $this->options ? $this->options->extractSoapClientOptions() : null);
+        return new \SoapClient($this->wsdl, $options);
     }
 }
